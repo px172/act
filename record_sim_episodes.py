@@ -8,10 +8,12 @@ import h5py
 from constants import PUPPET_GRIPPER_POSITION_NORMALIZE_FN, SIM_TASK_CONFIGS
 from ee_sim_env import make_ee_sim_env
 from sim_env import make_sim_env, BOX_POSE
-from scripted_policy import PickAndTransferPolicy, InsertionPolicy
+from scripted_policy import PickAndTransferPolicy, InsertionPolicy, PickAndStackAndTransferPolicy, OpenBoxCoverPolicy, TubeBoxCoverPolicy
 
 import IPython
 e = IPython.embed
+
+import cv2
 
 
 def main(args):
@@ -22,6 +24,13 @@ def main(args):
     Replay this joint trajectory (as action sequence) in sim_env, and record all observations.
     Save this episode of data, and continue to next episode of data collection.
     """
+
+    '''
+    hppeng: add video
+    '''
+    fourcc = cv2.VideoWriter_fourcc(*'XVID')
+
+
 
     task_name = args['task_name']
     dataset_dir = args['dataset_dir']
@@ -39,12 +48,22 @@ def main(args):
         policy_cls = PickAndTransferPolicy
     elif task_name == 'sim_insertion_scripted':
         policy_cls = InsertionPolicy
+    elif task_name == 'sim_stack_cube_scripted':
+        policy_cls = PickAndStackAndTransferPolicy
+    elif task_name == 'sim_right_arm_cube_stack_scripted':
+        raise('Not Ready')
+    elif task_name == 'sim_open_box_scripted':
+        policy_cls = OpenBoxCoverPolicy
+    elif task_name == 'sim_tube_box_scripted':
+        policy_cls = TubeBoxCoverPolicy
     else:
         raise NotImplementedError
 
     success = []
     for episode_idx in range(num_episodes):
         print(f'{episode_idx=}')
+        video_out = cv2.VideoWriter(task_name+'_sim_'+str(episode_idx)+'.avi', fourcc, 20.0, (640, 480))
+        replay_out = cv2.VideoWriter(task_name+'_reply_'+str(episode_idx)+'.avi', fourcc, 20.0, (640, 480))
         print('Rollout out EE space scripted policy')
         # setup the environment
         env = make_ee_sim_env(task_name)
@@ -60,10 +79,14 @@ def main(args):
             action = policy(ts)
             ts = env.step(action)
             episode.append(ts)
+            img = ts.observation['images'][render_cam_name]
+            img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+            video_out.write(img) 
             if onscreen_render:
                 plt_img.set_data(ts.observation['images'][render_cam_name])
                 plt.pause(0.002)
         plt.close()
+        video_out.release()
 
         episode_return = np.sum([ts.reward for ts in episode[1:]])
         episode_max_reward = np.max([ts.reward for ts in episode[1:]])
@@ -152,8 +175,15 @@ def main(args):
             data_dict['/observations/qpos'].append(ts.observation['qpos'])
             data_dict['/observations/qvel'].append(ts.observation['qvel'])
             data_dict['/action'].append(action)
+            
+            img = ts.observation['images'][render_cam_name]
+            img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+            replay_out.write(img)
+
             for cam_name in camera_names:
                 data_dict[f'/observations/images/{cam_name}'].append(ts.observation['images'][cam_name])
+        
+        replay_out.release()
 
         # HDF5
         t0 = time.time()

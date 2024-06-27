@@ -16,6 +16,8 @@ import IPython
 e = IPython.embed
 
 BOX_POSE = [None] # to be changed from outside
+REDBOX_POSE = [None] #red box pose
+GREENBOX_POSE = [None] #green box pose
 
 def make_sim_env(task_name):
     """
@@ -45,6 +47,24 @@ def make_sim_env(task_name):
         xml_path = os.path.join(XML_DIR, f'bimanual_viperx_insertion.xml')
         physics = mujoco.Physics.from_xml_path(xml_path)
         task = InsertionTask(random=False)
+        env = control.Environment(physics, task, time_limit=20, control_timestep=DT,
+                                  n_sub_steps=None, flat_observation=False)
+    elif 'sim_stack_cube' in task_name:
+        xml_path = os.path.join(XML_DIR, f'bimanual_viperx_stack_cube.xml')
+        physics = mujoco.Physics.from_xml_path(xml_path)
+        task = StackCubeTask(random=False)
+        env = control.Environment(physics, task, time_limit=20, control_timestep=DT,
+                                  n_sub_steps=None, flat_observation=False)
+    elif 'sim_open_box' in task_name:
+        xml_path = os.path.join(XML_DIR, f'bimanual_viperx_openbox.xml')
+        physics = mujoco.Physics.from_xml_path(xml_path)
+        task = OpenBoxTask(random=False)
+        env = control.Environment(physics, task, time_limit=20, control_timestep=DT,
+                                  n_sub_steps=None, flat_observation=False)
+    elif 'sim_tube_box' in task_name:
+        xml_path = os.path.join(XML_DIR, f'bimanual_viperx_tube_box.xml')
+        physics = mujoco.Physics.from_xml_path(xml_path)
+        task = TubeBoxTask(random=False)
         env = control.Environment(physics, task, time_limit=20, control_timestep=DT,
                                   n_sub_steps=None, flat_observation=False)
     else:
@@ -227,6 +247,160 @@ class InsertionTask(BimanualViperXTask):
         if pin_touched: # successful insertion
             reward = 4
         return reward
+
+
+class StackCubeTask(BimanualViperXTask):
+    def __init__(self, random=None):
+        super().__init__(random=random)
+        self.max_reward = 4
+
+    def initialize_episode(self, physics):
+        """Sets the state of the environment at the start of each episode."""
+        # TODO Notice: this function does not randomize the env configuration. Instead, set BOX_POSE from outside
+        # reset qpos, control and box position
+        with physics.reset_context():
+            physics.named.data.qpos[:16] = START_ARM_POSE
+            # hppeng: check the size of physics.data.ctrl
+            print(f"Size of physics.data.ctrl: {physics.data.ctrl.size}")
+            np.copyto(physics.data.ctrl, START_ARM_POSE)
+            assert BOX_POSE[0] is not None
+            physics.named.data.qpos[-14:] = BOX_POSE[0]
+        super().initialize_episode(physics)
+
+    @staticmethod
+    def get_env_state(physics):
+        env_state = physics.data.qpos.copy()[16:]
+        return env_state
+    # TODO refine the reward
+    def get_reward(self, physics):
+        # return whether left gripper is holding the box
+        all_contact_pairs = []
+        for i_contact in range(physics.data.ncon):
+            id_geom_1 = physics.data.contact[i_contact].geom1
+            id_geom_2 = physics.data.contact[i_contact].geom2
+            name_geom_1 = physics.model.id2name(id_geom_1, 'geom')
+            name_geom_2 = physics.model.id2name(id_geom_2, 'geom')
+            contact_pair = (name_geom_1, name_geom_2)
+            all_contact_pairs.append(contact_pair)
+
+        touch_left_gripper = ("red_box", "vx300s_left/10_left_gripper_finger") in all_contact_pairs
+        touch_right_gripper = ("red_box", "vx300s_right/10_right_gripper_finger") in all_contact_pairs
+        touch_table = ("red_box", "table") in all_contact_pairs
+
+        reward = 0
+        if touch_right_gripper:
+            reward = 1
+        if touch_right_gripper and not touch_table: # lifted
+            reward = 2
+        if touch_left_gripper: # attempted transfer
+            reward = 3
+        if touch_left_gripper and not touch_table: # successful transfer
+            reward = 4
+        return reward
+
+class OpenBoxTask(BimanualViperXTask):
+    def __init__(self, random=None):
+        super().__init__(random=random)
+        self.max_reward = 4
+
+    def initialize_episode(self, physics):
+        """Sets the state of the environment at the start of each episode."""
+        # TODO Notice: this function does not randomize the env configuration. Instead, set BOX_POSE from outside
+        # reset qpos, control and box position
+        with physics.reset_context():
+            physics.named.data.qpos[:16] = START_ARM_POSE
+            # hppeng: check the size of physics.data.ctrl
+            print(f"Size of physics.data.ctrl: {physics.data.ctrl.size}")
+            np.copyto(physics.data.ctrl, START_ARM_POSE)
+            assert BOX_POSE[0] is not None
+            physics.named.data.qpos[-14:] = BOX_POSE[0]
+        super().initialize_episode(physics)
+
+    @staticmethod
+    def get_env_state(physics):
+        env_state = physics.data.qpos.copy()[16:]
+        return env_state
+    # TODO refine the reward
+    def get_reward(self, physics):
+        # return whether left gripper is holding the box
+        all_contact_pairs = []
+        for i_contact in range(physics.data.ncon):
+            id_geom_1 = physics.data.contact[i_contact].geom1
+            id_geom_2 = physics.data.contact[i_contact].geom2
+            name_geom_1 = physics.model.id2name(id_geom_1, 'geom')
+            name_geom_2 = physics.model.id2name(id_geom_2, 'geom')
+            contact_pair = (name_geom_1, name_geom_2)
+            all_contact_pairs.append(contact_pair)
+
+        touch_left_gripper = ("TUBE_COVER", "vx300s_left/10_left_gripper_finger") in all_contact_pairs
+        touch_right_gripper = ("TUBE_COVER", "vx300s_right/10_right_gripper_finger") in all_contact_pairs
+        touch_table = ("TUBE_COVER", "table") in all_contact_pairs
+
+        reward = 0
+        if touch_right_gripper:
+            reward = 1
+        if touch_right_gripper and not touch_table: # lifted
+            reward = 2
+        if touch_left_gripper: # attempted transfer
+            reward = 3
+        if touch_left_gripper and not touch_table: # successful transfer
+            reward = 4
+        return reward
+
+
+class TubeBoxTask(BimanualViperXTask):
+    def __init__(self, random=None):
+        super().__init__(random=random)
+        self.max_reward = 4
+
+    def initialize_episode(self, physics):
+        """Sets the state of the environment at the start of each episode."""
+        # TODO Notice: this function does not randomize the env configuration. Instead, set BOX_POSE from outside
+        # reset qpos, control and box position
+        with physics.reset_context():
+            physics.named.data.qpos[:16] = START_ARM_POSE
+            # hppeng: check the size of physics.data.ctrl
+            print(f"Size of physics.data.ctrl: {physics.data.ctrl.size}")
+            np.copyto(physics.data.ctrl, START_ARM_POSE)
+            assert BOX_POSE[0] is not None
+            physics.named.data.qpos[-7*3:] = BOX_POSE[0]
+        super().initialize_episode(physics)
+
+    @staticmethod
+    def get_env_state(physics):
+        env_state = physics.data.qpos.copy()[16:]
+        return env_state
+    # TODO refine the reward
+    def get_reward(self, physics):
+        # return whether left gripper is holding the box
+        all_contact_pairs = []
+        for i_contact in range(physics.data.ncon):
+            id_geom_1 = physics.data.contact[i_contact].geom1
+            id_geom_2 = physics.data.contact[i_contact].geom2
+            name_geom_1 = physics.model.id2name(id_geom_1, 'geom')
+            name_geom_2 = physics.model.id2name(id_geom_2, 'geom')
+            contact_pair = (name_geom_1, name_geom_2)
+            all_contact_pairs.append(contact_pair)
+
+        touch_left_gripper = ("tube", "vx300s_left/10_left_gripper_finger") in all_contact_pairs
+        touch_right_gripper = ("box_handle", "vx300s_right/10_right_gripper_finger") in all_contact_pairs
+        touch_cover_box = ("box_side01", "box_cover") in all_contact_pairs
+        touch_tube_box = ("box_bottom", "tube") in all_contact_pairs
+
+        reward = 0
+        if touch_right_gripper:
+            reward = 1
+        if touch_left_gripper:
+            reward = 1
+        if touch_right_gripper and touch_left_gripper: # lifted
+            reward = 2
+        if touch_cover_box: 
+            reward = 3
+        if touch_tube_box: # attempted transfer
+            reward = 3
+        if touch_cover_box and touch_tube_box: # successful 
+            reward = 4
+        return reward  
 
 
 def get_action(master_bot_left, master_bot_right):

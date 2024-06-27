@@ -1,0 +1,69 @@
+<mujoco>
+    <asset>
+        <mesh file="tabletop.stl" name="tabletop" scale="0.001 0.001 0.001"/>
+        <mesh file="Rotor_Mod_800Sides_bin.stl" name="rotor" scale="0.003 0.003 0.003"/>
+        <mesh file="TUBE_STAND_v2.stl" name="TUBE_STAND" scale="0.001 0.001 0.001"/>
+        <mesh file="50ml_conical_stand.stl" name="50ml_conical_stand" scale="0.001 0.001 0.001"/>
+        <mesh file="50_mL_Tube.stl" name="50mLTube" scale="0.001 0.001 0.001"/>
+    </asset>
+
+    <visual>
+        <map fogstart="1.5" fogend="5" force="0.1" znear="0.1"/>
+        <quality shadowsize="4096" offsamples="4"/>
+        <headlight ambient="0.4 0.4 0.4"/>
+    </visual>
+
+    <worldbody>
+        <light castshadow="false" directional='true' diffuse='.3 .3 .3' specular='0.3 0.3 0.3' pos='-1 -1 1' dir='1 1 -1'/>
+        <light directional='true' diffuse='.3 .3 .3' specular='0.3 0.3 0.3' pos='1 -1 1' dir='-1 1 -1'/>
+        <light castshadow="false" directional='true' diffuse='.3 .3 .3' specular='0.3 0.3 0.3' pos='0 1 1' dir='0 -1 -1'/>
+
+        <body name="table" pos="0 .6 0">
+            <geom group="1" mesh="tabletop" pos="0 0 0" type="mesh" conaffinity="1" contype="1" name="table" rgba="0.2 0.2 0.2 1" />
+        </body>
+        <body name="midair" pos="0 .6 0.2">
+            <site pos="0 0 0" size="0.01" type="sphere" name="midair" rgba="1 0 0 0"/>
+        </body>
+        <body name="TUBE_STAND" pos="0.0 .6 0.01">
+            <joint name="tube_stand_joint" type="free" frictionloss="0.01"/>
+            <inertial pos="0 0 0" mass="0.1" diaginertia="0.002 0.002 0.002"/>
+            
+            <!-- bottom -->
+            <geom type="box" size="0.02 0.02 0.002" pos="0 0 0" rgba="0.7 0.7 0.7 0.5"/>
+            
+            <!-- side 01 -->
+            <geom type="box" size=".02 .001 .04"  pos="0 -0.0195 0.042"  rgba="0 0 .8 1"/>    
+
+            <!-- side 02 -->
+            <geom type="box" size=".02 .001 .04"  pos="0 0.0195 0.042"  rgba="0 0 .8 1"/>    
+
+            <!-- side 03 -->
+            <geom type="box" size=".001 .02 .04"  pos="-0.0195 0 0.042"  rgba="0 0 .8 1"/>    
+
+            <!-- side 04 -->
+            <geom type="box" size=".001 .02 .04"  pos="0.0195 0 0.042"  rgba="0 0 .8 1"/>    
+
+        </body>
+
+        <body name="TUBE_COVER" pos="0.0 .6 0.093">
+            <joint name="tube_cover_joint" type="free" frictionloss="0.01"/>
+            <inertial pos="0 0 0" mass="0.02" diaginertia="0.001 0.001 0.001"/>    
+            <!-- top -->
+            <geom type="box" size="0.02 0.02 0.002" pos="0 0 0" rgba="0.7 0.7 0.7 0.5"/>
+            <!-- handle (short pillar) -->
+            <geom type="cylinder" size="0.005 0.02" pos="0 0 0.011" rgba="0.8 0.2 0.2 1"/>
+        </body>
+
+
+        <camera name="left_pillar" pos="-0.5 0.2 0.6" fovy="78" mode="targetbody" target="table"/>
+        <camera name="right_pillar" pos="0.5 0.2 0.6" fovy="78" mode="targetbody" target="table"/>
+        <camera name="top" pos="0 0.6 0.8" fovy="78" mode="targetbody" target="table"/>
+        <camera name="angle" pos="0 0 0.6" fovy="78" mode="targetbody" target="table"/>
+
+        <!--
+        <camera name="front_close" pos="0 0.2 0.4" fovy="78" mode="targetbody" target="vx300s_left/camera_focus"/>
+        -->
+
+    </worldbody>
+
+</mujoco>

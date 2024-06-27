@@ -1,0 +1,66 @@
+<mujoco>
+    <include file="scene.xml"/>
+    <include file="vx300s_dependencies.xml"/>
+    
+    <worldbody>
+        <include file="vx300s_left.xml" />
+        <include file="vx300s_right.xml" />
+
+        <body name="TUBE_STAND" pos="0.0 .6 0.01">
+            <joint name="tube_stand_joint" type="free" frictionloss="0.01"/>
+            <inertial pos="0 0 0" mass="0.1" diaginertia="0.002 0.002 0.002"/>
+            
+            <!-- bottom -->
+            <geom type="box" size="0.02 0.02 0.002" pos="0 0 0" rgba="0.7 0.7 0.7 0.5"/>
+            
+            <!-- side 01 -->
+            <geom type="box" size=".02 .001 .04"  pos="0 -0.0195 0.042"  rgba="0 0 .8 1"/>    
+
+            <!-- side 02 -->
+            <geom type="box" size=".02 .001 .04"  pos="0 0.0195 0.042"  rgba="0 0 .8 1"/>    
+
+            <!-- side 03 -->
+            <geom type="box" size=".001 .02 .04"  pos="-0.0195 0 0.042"  rgba="0 0 .8 1"/>    
+
+            <!-- side 04 -->
+            <geom type="box" size=".001 .02 .04"  pos="0.0195 0 0.042"  rgba="0 0 .8 1"/>    
+
+        </body>
+
+        <body name="TUBE_COVER" pos="0.0 .6 0.093">
+            <joint name="tube_cover_joint" type="free" frictionloss="0.01"/>
+            <inertial pos="0 0 0" mass="0.01" diaginertia="0.001 0.001 0.001"/>    
+            <!-- top -->
+            <geom condim="4" solimp="0.99 1 0.01" solref="0.01 1" friction="0.5 0.5 0.01" type="box" size="0.02 0.02 0.002" pos="0 0 0" rgba="0.7 0.7 0.7 0.5"/>
+            <!-- handle (short pillar) -->
+            <geom condim="4" solimp="0.99 1 0.01" solref="0.01 1" friction="0.5 0.5 0.01" type="box" size="0.005 0.005 0.02" pos="0 0 0.021" rgba="0.8 0.2 0.2 1"/>
+        </body>
+
+    </worldbody>
+
+    <actuator>
+        <position ctrllimited="true" ctrlrange="-3.14158 3.14158" joint="vx300s_left/waist" kp="800"  user="1" forcelimited="true" forcerange="-150 150"/>
+        <position ctrllimited="true" ctrlrange="-1.85005 1.25664" joint="vx300s_left/shoulder" kp="1600"  user="1" forcelimited="true" forcerange="-300 300"/>
+        <position ctrllimited="true" ctrlrange="-1.76278 1.6057" joint="vx300s_left/elbow" kp="800"  user="1" forcelimited="true" forcerange="-100 100"/>
+        <position ctrllimited="true" ctrlrange="-3.14158 3.14158" joint="vx300s_left/forearm_roll" kp="10"  user="1" forcelimited="true" forcerange="-100 100"/>
+        <position ctrllimited="true" ctrlrange="-1.8675 2.23402" joint="vx300s_left/wrist_angle" kp="50"  user="1"/>
+        <position ctrllimited="true" ctrlrange="-3.14158 3.14158" joint="vx300s_left/wrist_rotate" kp="20"  user="1"/>
+        <position ctrllimited="true" ctrlrange="0.021 0.057" joint="vx300s_left/left_finger" kp="200"  user="1"/>
+        <position ctrllimited="true" ctrlrange="-0.057 -0.021" joint="vx300s_left/right_finger" kp="200"  user="1"/>
+
+        <position ctrllimited="true" ctrlrange="-3.14158 3.14158" joint="vx300s_right/waist" kp="800"  user="1" forcelimited="true" forcerange="-150 150"/>
+        <position ctrllimited="true" ctrlrange="-1.85005 1.25664" joint="vx300s_right/shoulder" kp="1600"  user="1" forcelimited="true" forcerange="-300 300"/>
+        <position ctrllimited="true" ctrlrange="-1.76278 1.6057" joint="vx300s_right/elbow" kp="800"  user="1" forcelimited="true" forcerange="-100 100"/>
+        <position ctrllimited="true" ctrlrange="-3.14158 3.14158" joint="vx300s_right/forearm_roll" kp="10"  user="1" forcelimited="true" forcerange="-100 100"/>
+        <position ctrllimited="true" ctrlrange="-1.8675 2.23402" joint="vx300s_right/wrist_angle" kp="50"  user="1"/>
+        <position ctrllimited="true" ctrlrange="-3.14158 3.14158" joint="vx300s_right/wrist_rotate" kp="20"  user="1"/>
+        <position ctrllimited="true" ctrlrange="0.021 0.057" joint="vx300s_right/left_finger" kp="200"  user="1"/>
+        <position ctrllimited="true" ctrlrange="-0.057 -0.021" joint="vx300s_right/right_finger" kp="200"  user="1"/>
+    </actuator>
+
+    <keyframe>
+        <key qpos="0 -0.96 1.16 0 -0.3 0 0.024 -0.024  0 -0.96 1.16 0 -0.3 0 0.024 -0.024  0.0 .6 0.01 1 0 0 0 0.0 .6 0.093 1 0 0 0"/>
+    </keyframe>
+
+
+</mujoco>

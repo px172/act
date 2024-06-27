@@ -15,6 +15,7 @@ from utils import sample_box_pose, sample_insertion_pose # robot functions
 from utils import compute_dict_mean, set_seed, detach_dict # helper functions
 from policy import ACTPolicy, CNNMLPPolicy
 from visualize_episodes import save_videos
+from toolbox import sample_box_tube_cover_pose
 
 from sim_env import BOX_POSE
 
@@ -205,7 +206,11 @@ def eval_bc(config, ckpt_name, save_episode=True):
             BOX_POSE[0] = sample_box_pose() # used in sim reset
         elif 'sim_insertion' in task_name:
             BOX_POSE[0] = np.concatenate(sample_insertion_pose()) # used in sim reset
-
+        elif 'sim_tube_box' in task_name:
+            #print("Not ready")
+            #exit(-1)
+            BOX_POSE[0] = np.concatenate(sample_box_tube_cover_pose()) 
+            
         ts = env.reset()
 
         ### onscreen render
