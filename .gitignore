@@ -138,3 +138,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+#
+*.avi
+*.zip
+assets/*.stl
+assets/*/*.stl

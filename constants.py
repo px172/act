@@ -53,12 +53,34 @@ SIM_TASK_CONFIGS = {
         'camera_names': ['top']
     },
 
+    'sim_TM12_trace_scripted': {
+        'dataset_dir': DATA_DIR + '/sim_TM12_trace',
+        'num_episodes': 50,
+        'episode_len': 400,
+        'camera_names': ['top']
+    },
+
+    'sim_TM12_stack_cube_scripted': {
+        'dataset_dir': DATA_DIR + '/TM12_stack_cube_scripted',
+        'num_episodes': 50,
+        'episode_len': 400,
+        'camera_names': ['top']
+    },
+
+    'sim_XARM6_trace_scripted': {
+        'dataset_dir': DATA_DIR + '/sim_XARM6_trace',
+        'num_episodes': 50,
+        'episode_len': 400,
+        'camera_names': ['top']
+    }
+
 }
 
 ### Simulation envs fixed constants
 DT = 0.02
 JOINT_NAMES = ["waist", "shoulder", "elbow", "forearm_roll", "wrist_angle", "wrist_rotate"]
-START_ARM_POSE = [0, -0.96, 1.16, 0, -0.3, 0, 0.02239, -0.02239,  0, -0.96, 1.16, 0, -0.3, 0, 0.02239, -0.02239]
+START_ARM_POSE = [0, -0.96, 1.16, 0, -0.3, 0, 0.02239, -0.02239,  0, -0.96, 1.16, 0, -0.3, 0, 0.02239, -0.02239] # For vx300
+START_TM12_ARM_POSE = [0, 0, 1.57, 0, 1.57, 0, 0.02239, -0.02239,  0, 0, 1.57, 0, 1.57, 0, 0.02239, -0.02239] # For TM12 with built-in gripper
 
 XML_DIR = str(pathlib.Path(__file__).parent.resolve()) + '/assets/' # note: absolute path
 
